@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LB & Sons — Daily Plan (Shared)</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --paper:#f5f3ee; --card:#ffffff; --line:#d8d2c4;
+    --accent:#f2b705; --accent-dark:#c99400; --steel:#2c3e50; --steel2:#3d5468;
+    --green:#2e7d32; --red:#c0392b; --muted:#6b6459; --chipbg:#ece7db;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--paper);color:var(--ink);line-height:1.5;}
+  header.top{background:var(--steel);color:#fff;padding:14px 20px;position:sticky;top:0;z-index:50;
+    box-shadow:0 2px 8px rgba(0,0,0,.25);border-bottom:4px solid var(--accent);}
+  header.top h1{margin:0;font-size:19px;letter-spacing:.3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  header.top .sub{font-size:12px;opacity:.85;margin-top:2px;}
+  .badge{background:var(--accent);color:#000;font-weight:700;border-radius:6px;padding:2px 8px;font-size:12px;}
+  /* SYNC BAR */
+  .syncbar{background:#26333f;color:#fff;padding:8px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    font-size:13px;position:sticky;top:56px;z-index:49;border-bottom:1px solid rgba(255,255,255,.1);}
+  .syncbar .who{display:flex;align-items:center;gap:6px;}
+  .whochip{background:#3d5468;border:1px solid #557;border-radius:16px;padding:3px 10px;cursor:pointer;font-size:12px;}
+  .whochip.on{background:var(--accent);color:#000;border-color:var(--accent-dark);font-weight:700;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:#888;}
+  .dot.ok{background:#37d67a;} .dot.off{background:#e0a800;} .dot.err{background:#e05353;}
+  .status{opacity:.9;}
+  .loadbanner{background:var(--accent);color:#000;font-weight:600;padding:0;max-height:0;overflow:hidden;transition:.25s;}
+  .loadbanner.show{padding:10px 16px;max-height:80px;}
+  .loadbanner button{margin-left:10px;}
+  .wrap{max-width:920px;margin:0 auto;padding:18px 16px 120px;}
+  .miyagi{background:#fff8e1;border-left:4px solid var(--accent);padding:10px 14px;border-radius:8px;
+    font-size:13px;color:#6b5a12;margin-bottom:18px;font-style:italic;}
+  section.block{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05);}
+  section.block > h2{margin:0 0 12px;font-size:15px;text-transform:uppercase;letter-spacing:.5px;color:var(--steel);
+    display:flex;align-items:center;gap:8px;}
+  section.block > h2 .n{background:var(--steel);color:#fff;width:24px;height:24px;border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px;flex:0 0 auto;}
+  label{font-size:12px;font-weight:600;color:var(--muted);display:block;margin:8px 0 3px;text-transform:uppercase;letter-spacing:.4px;}
+  input[type=text],input[type=date],textarea,select{width:100%;padding:9px 10px;border:1px solid var(--line);
+    border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink);}
+  textarea{resize:vertical;min-height:44px;}
+  input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);border-color:var(--accent);}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > div{flex:1;min-width:140px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .chip{background:var(--chipbg);border:1px solid var(--line);border-radius:20px;padding:5px 12px;font-size:13px;
+    cursor:pointer;user-select:none;transition:.12s;white-space:nowrap;}
+  .chip:hover{border-color:var(--accent-dark);}
+  .chip.on{background:var(--accent);border-color:var(--accent-dark);color:#000;font-weight:700;}
+  .chip.ins{background:#eef3f7;border-style:dashed;}
+  .chip.ins:hover{background:#dce7ef;}
+  .btn{display:inline-flex;align-items:center;gap:6px;background:var(--steel);color:#fff;border:none;
+    border-radius:8px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:.12s;}
+  .btn:hover{background:var(--steel2);}
+  .btn.accent{background:var(--accent);color:#000;}
+  .btn.accent:hover{background:var(--accent-dark);}
+  .btn.ghost{background:transparent;color:var(--steel);border:1px solid var(--line);}
+  .btn.ghost:hover{background:#eee;}
+  .btn.danger{background:transparent;color:var(--red);border:1px solid #e5c3bd;}
+  .btn.danger:hover{background:#fbeae7;}
+  .btn.sm{padding:6px 10px;font-size:12px;}
+  .jobcard{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;background:#fcfbf8;position:relative;}
+  .jobcard .jhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .jobcard .jnum{font-weight:800;color:var(--steel);font-size:15px;}
+  .jobcard .jtools{display:flex;gap:6px;}
+  .suprow{display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+  .suprow select{max-width:150px;}
+  .suprow input{flex:1;}
+  .addbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px;}
+  .secondjob{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px;}
+  .toolbar{position:fixed;bottom:0;left:0;right:0;background:var(--steel);padding:12px 16px;display:flex;gap:10px;
+    justify-content:center;flex-wrap:wrap;box-shadow:0 -2px 10px rgba(0,0,0,.25);z-index:60;border-top:3px solid var(--accent);}
+  dialog{border:none;border-radius:14px;padding:0;max-width:640px;width:92%;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+  dialog::backdrop{background:rgba(0,0,0,.45);}
+  .dlg-head{background:var(--steel);color:#fff;padding:14px 18px;font-size:16px;font-weight:700;border-radius:14px 14px 0 0;
+    display:flex;justify-content:space-between;align-items:center;}
+  .dlg-body{padding:18px;max-height:70vh;overflow:auto;}
+  .out{white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;background:#fffef8;
+    border:1px solid var(--line);border-radius:8px;padding:14px;}
+  .mgr-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:560px){.mgr-grid{grid-template-columns:1fr;}}
+  .mgr-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .mgr-item{background:var(--chipbg);border:1px solid var(--line);border-radius:16px;padding:4px 8px 4px 12px;font-size:13px;
+    display:flex;align-items:center;gap:6px;}
+  .mgr-item button{background:none;border:none;color:var(--red);cursor:pointer;font-size:15px;line-height:1;padding:0;}
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#000;color:#fff;padding:10px 18px;
+    border-radius:24px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:100;}
+  .toast.show{opacity:.92;}
+  details.help{margin-bottom:16px;}
+  details.help summary{cursor:pointer;font-weight:600;color:var(--steel);font-size:13px;}
+  details.help div{font-size:13px;color:var(--muted);padding:8px 0 0;}
+  .site-pick{margin-bottom:6px;}
+  .gate{position:fixed;inset:0;background:var(--steel);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .gate.hide{display:none;}
+  .gatecard{background:#fff;border-radius:16px;padding:28px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.4);border-top:5px solid var(--accent);}
+  .gatecard h2{margin:6px 0 4px;font-size:20px;color:var(--steel);}
+  .gatecard p{font-size:13px;color:var(--muted);margin:0 0 16px;}
+  .gatecard input{text-align:center;font-size:16px;margin-bottom:12px;}
+  .gate-err{color:var(--red);font-size:13px;min-height:18px;margin-top:6px;}
+  @media print{header.top,.syncbar,.loadbanner,.toolbar,.addbar,.jtools,.no-print{display:none!important;}
+    body{background:#fff;} section.block{border:none;box-shadow:none;}}
+</style>
+</head>
+<body>
+<div class="gate hide" id="gate">
+  <div class="gatecard">
+    <div style="font-size:34px;">🦺🔒</div>
+    <h2>LB &amp; Sons Daily Plan</h2>
+    <p>Enter the team password to open the plan.</p>
+    <input type="password" id="gatePw" placeholder="Password" autocomplete="current-password">
+    <button class="btn accent" style="width:100%;justify-content:center;" onclick="tryUnlock()">Unlock</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+<header class="top">
+  <h1>🦺 LB &amp; Sons <span class="badge">Daily Plan</span></h1>
+  <div class="sub">Shared plan for Yvette &amp; Julio — one of you edits, the other sees it. Julio sends from Outlook.</div>
+</header>
+
+<div class="syncbar">
+  <span class="who">You are:
+    <span class="whochip" data-user="Yvette" onclick="setUser('Yvette')">Yvette</span>
+    <span class="whochip" data-user="Julio" onclick="setUser('Julio')">Julio</span>
+    <span class="whochip" data-user="Other" onclick="setUser('Other')">Someone else</span>
+  </span>
+  <span class="status"><span class="dot" id="syncDot"></span> <span id="syncStatus">Starting…</span></span>
+  <span style="margin-left:auto;"><button class="btn accent sm" onclick="saveNow()">💾 Save &amp; Share Now</button></span>
+</div>
+<div class="loadbanner" id="loadBanner">
+  <span id="loadBannerText"></span>
+  <button class="btn sm" onclick="loadLatest()">Load their version</button>
+</div>
+
+<div class="wrap">
+  <div class="miyagi">"Plan first, work smooth. One board, both of you write on it." — build the plan below. It saves and shares by itself. When it's ready, press <b>Generate Plan</b>, then <b>Open in Email</b>.</div>
+
+  <details class="help">
+    <summary>How to use this (30-second guide)</summary>
+    <div>
+      1) Tap your name up top (Yvette or Julio). &nbsp;2) Set the date. &nbsp;3) Check the top notes &amp; repairs crew. &nbsp;
+      4) Set who supervises what. &nbsp;5) Add a job card for each truck/crew — pick a known job site and the Job#, ticket, type &amp; supervisor auto-fill. &nbsp;
+      6) Tap crew names and equipment to add them. &nbsp;7) Press <b>Generate Plan</b>, then <b>Open in Email</b> — the crew is already in the To line; review and Send from Outlook.<br><br>
+      Every change saves to the shared cloud automatically. If the other person edits, a yellow bar appears so you can load their version. Use <b>Manage Lists</b> to add or remove people and trucks.
+    </div>
+  </details>
+
+  <section class="block">
+    <h2><span class="n">📅</span> Date</h2>
+    <div class="row">
+      <div><label>Plan date</label><input type="date" id="planDate"></div>
+      <div><label>Shows as</label><input type="text" id="dateDisplay" readonly></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="n">📸</span> Standing Note (top of plan)</h2>
+    <textarea id="attentionNote"></textarea>
+    <div class="hint">The "ATTENTION LEADS" photo note that goes at the very top every day.</div>
+  </section>
+
+  <section class="block">
+    <h2><span class="n">1</span> Yard / Repairs Crew</h2>
+    <label>Repairs crew line</label>
+    <input type="text" id="repairsCrew">
+    <label>Extra yard lines (one per line, optional)</label>
+    <textarea id="repairsExtra" placeholder="e.g. Jaime E at yard to paint Unit #709."></textarea>
+    <label>Repairs list bullets (one per line)</label>
+    <textarea id="repairsList" style="min-height:70px;"></textarea>
+  </section>
+
+  <section class="block">
+    <h2><span class="n">2</span> Supervision</h2>
+    <div id="supList"></div>
+    <div class="addbar"><button class="btn ghost sm" onclick="addSupRow()">+ Add supervisor</button></div>
+    <div class="hint">Each supervisor and the area(s) they cover. Yvette usually covers "All Jobs".</div>
+  </section>
+
+  <section class="block">
+    <h2><span class="n">🚚</span> Job Assignments</h2>
+    <div id="jobList"></div>
+    <div class="addbar">
+      <button class="btn accent" onclick="addJob()">+ Add Job</button>
+      <button class="btn ghost sm" onclick="openManager()">⚙ Manage Lists</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2><span class="n">✉️</span> Email Recipients</h2>
+    <textarea id="recipients" style="min-height:60px;"></textarea>
+    <div class="hint">The crew "To:" list. "Open in Email" drops these straight into the To line.</div>
+  </section>
+</div>
+
+<div class="toolbar">
+  <button class="btn accent" onclick="generate()">⚡ Generate Plan</button>
+  <button class="btn" onclick="doCopy()">📋 Copy Plan</button>
+  <button class="btn ghost" onclick="doMail()">✉️ Open in Email</button>
+  <button class="btn ghost" onclick="window.print()">🖨 Print / PDF</button>
+</div>
+
+<dialog id="outDlg">
+  <div class="dlg-head"><span>Today's Plan — ready to send</span>
+    <button class="btn accent sm" onclick="document.getElementById('outDlg').close()">Close</button></div>
+  <div class="dlg-body">
+    <div class="addbar" style="margin-bottom:10px;">
+      <button class="btn accent sm" onclick="doCopy()">📋 Copy to clipboard</button>
+      <button class="btn sm" onclick="doMail()">✉️ Open in Email</button>
+      <button class="btn ghost sm" onclick="window.print()">🖨 Print / Save PDF</button>
+    </div>
+    <div class="out" id="outText"></div>
+  </div>
+</dialog>
+
+<dialog id="mgrDlg">
+  <div class="dlg-head"><span>⚙ Manage Lists</span>
+    <button class="btn accent sm" onclick="document.getElementById('mgrDlg').close()">Done</button></div>
+  <div class="dlg-body">
+    <div class="hint" style="margin-bottom:10px;">Add or remove people, trucks and equipment. Changes save to the shared plan for both of you.</div>
+    <div class="mgr-grid" id="mgrGrid"></div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= DEFAULT DATA (from your real plans) ================= */
+var DEFAULTS = {
+  attentionNote:"ATTENTION LEADS: Take before, during and after photos then send them to the Whatsapp. Subject line on Photos: Job#, Location, and Date. Thank you!",
+  repairsCrew:"Jose R, Joseph and Kortezz:",
+  repairsList:[
+    "See white board in Jerry's office",
+    "All large vacs are main priority this week, any major repairs for large vacs please report to Yvette before making purchases."
+  ],
+  footer:"***Before, during and after photos sent to Whatsapp, Paperwork and receipts turned into folders daily, if out of town please email paperwork and receipts***",
+  supervisors:["Yvette","Julio","Victor","Chris","Jaime R"],
+  employees:["Jose R","Joseph","Kortezz","Jaime E","Jaime R","Ricardo","Ray","Leo","Christian","Bryan Z","Bryan C","Mario","Jose Luis","Jose A","Ruben N","Nestor","Eustaquio","Alfonso","Victor"],
+  equipment:["truck #230","truck #231","truck #233","truck #234","truck #235","truck #236","truck #239","truck #242",
+    "vacuum truck #416","vacuum truck #425","vacuum truck #426","vacuum truck #427",
+    "small vacuum #408","small vacuum #414","small vacuum #428",
+    "trailer #502","lowboy #506","trailer #516","trailer #521","gooseneck trailer #522","trailer #911",
+    "Bobcat #310 with forks","Inferno #601","Mini Mait #714","24\" auger",
+    "backfill","anchors","manhole covers","caution tape","stakes","steel plates",
+    "welder/generator","rubber mats","grinder","hammer","fence tools","harness","yo-yos","Vermeer Baby Vacuum","Tiller"],
+  sites:[
+    {loc:"11050 North Loop, Socorro, TX",job:"10075",ticket:"DT075849",type:"Quoted",sup:"Chris"},
+    {loc:"1965 Thomas, Las Cruces, NM",job:"10069",ticket:"DN00083059",type:"Distribution",sup:"Victor"},
+    {loc:"607 McClure, Las Cruces, NM",job:"10070",ticket:"DN00083115",type:"Distribution",sup:"Victor"},
+    {loc:"Hawkins Substation, El Paso, TX",job:"10029",ticket:"",type:"Quoted",sup:"Julio"},
+    {loc:"200 S San Elizario, Clint, TX",job:"",ticket:"",type:"",sup:"Julio"},
+    {loc:"Airport Rd and Country Club, Santa Teresa, NM",job:"9909",ticket:"DN0740333",type:"Distribution",sup:"Victor"},
+    {loc:"701 NM-9, Santa Teresa, NM",job:"10030",ticket:"DN00074746",type:"Distribution",sup:"Victor"},
+    {loc:"I-10 and Fabens, Fabens, TX",job:"10062",ticket:"",type:"Quoted",sup:"Chris"},
+    {loc:"1305 Wyoming Ave, Las Cruces, NM",job:"10066",ticket:"",type:"Distribution",sup:"Julio"},
+    {loc:"1929 Preview, El Paso, TX",job:"",ticket:"",type:"",sup:"Victor"}
+  ],
+  recipients:"Yvette Puga <yvette@lbsons.com>; Denise Alvarez <denise@lbsons.com>; Phoebe Barron <phoebe@lbsons.com>; Angie Gonzalez <angie@lbsons.com>; Jerry Barron <barronjerry@hotmail.com>; Martha Barron <martha@lbsons.com>; Victor Gonzalez <victor@lbsons.com>; Jaime Rodriguez <jaimer@lbsons.com>; Jose Ramirez <joseramirez@lbsons.com>; Eustaquio <eustaquiordz66@gmail.com>; Ruben Nanez <ruben.nanez80@icloud.com>; Bryan Carreon <bryan2911zk@gmail.com>; Charles Blancas <crblancas@yahoo.com>; ricardoalvarezcano1987@gmail.com; alfonsonajera.an@gmail.com; lbsonsexcavators1979@gmail.com; Zuniga.aguilar.bryan2003@gmail.com; mariohulloa1@gmail.com; mmolinavictor1955@gmail.com; Nestormjr060@gmail.com; Kortezzkman@gmail.com; Jose1758rivera@gmail.com; Josearvilla1@yahoo.com; cristianalexisss@icloud.com"
+};
+
+/* ================= STATE ================= */
+var lib = {
+  supervisors: DEFAULTS.supervisors.slice(),
+  employees: DEFAULTS.employees.slice(),
+  equipment: DEFAULTS.equipment.slice(),
+  sites: DEFAULTS.sites.map(function(s){return Object.assign({},s);})
+};
+var supervision = [
+  {sup:"Yvette", areas:["All Jobs"]},{sup:"Julio", areas:[]},{sup:"Victor", areas:[]},{sup:"Chris", areas:[]}
+];
+var jobs = [];
+var jobSeq = 0;
+
+/* ================= HELPERS ================= */
+function el(tag,attrs,kids){var e=document.createElement(tag);attrs=attrs||{};
+  for(var k in attrs){if(k==="class")e.className=attrs[k];else if(k==="html")e.innerHTML=attrs[k];else e.setAttribute(k,attrs[k]);}
+  (kids||[]).forEach(function(c){e.appendChild(typeof c==="string"?document.createTextNode(c):c);});return e;}
+function joinNames(arr){arr=arr.filter(Boolean);if(!arr.length)return"";if(arr.length===1)return arr[0];
+  if(arr.length===2)return arr[0]+" and "+arr[1];return arr.slice(0,-1).join(", ")+" and "+arr[arr.length-1];}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},1600);}
+function fmtDate(v){if(!v)return"";var p=v.split("-");if(p.length!==3)return"";
+  return parseInt(p[1],10)+"/"+parseInt(p[2],10)+"/"+p[0].slice(2);}
+function nowTime(){var d=new Date();var h=d.getHours(),m=d.getMinutes();var ap=h>=12?"pm":"am";
+  h=h%12;if(h===0)h=12;return h+":"+String(m).padStart(2,"0")+ap;}
+
+/* ================= DATE ================= */
+function todayIso(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function initDate(){
+  var inp=document.getElementById('planDate');inp.value=todayIso();
+  document.getElementById('dateDisplay').value="Plan-"+fmtDate(inp.value);
+  inp.addEventListener('input',function(){document.getElementById('dateDisplay').value="Plan-"+fmtDate(inp.value);});
+}
+
+/* ================= SUPERVISION ================= */
+function areaOptions(){
+  var set=[];function add(v){v=(v||"").trim();if(v&&set.indexOf(v)<0)set.push(v);}
+  add("All Jobs");
+  jobs.forEach(function(j){add(j.location);if(j.second)add(j.second.location);}); // mirror the crews' jobs
+  lib.sites.forEach(function(s){add(s.loc);});
+  return set;
+}
+function renderSup(){
+  var box=document.getElementById('supList');box.innerHTML="";
+  supervision.forEach(function(s,i){
+    if(!s.areas){s.areas=s.area?[s.area]:[];}
+    var sel=el('select');
+    lib.supervisors.forEach(function(n){var o=el('option',{value:n},[n]);if(n===s.sup)o.selected=true;sel.appendChild(o);});
+    if(lib.supervisors.indexOf(s.sup)<0 && s.sup){var o=el('option',{value:s.sup},[s.sup]);o.selected=true;sel.appendChild(o);}
+    sel.addEventListener('change',function(){s.sup=sel.value;scheduleSave();});
+    var add=el('select');add.appendChild(el('option',{value:''},['+ add job / area…']));
+    areaOptions().forEach(function(a){if(s.areas.indexOf(a)<0)add.appendChild(el('option',{value:a},[a]));});
+    add.appendChild(el('option',{value:'__custom__'},['Other (type it)…']));
+    add.addEventListener('change',function(){var v=add.value;if(!v)return;
+      if(v==='__custom__'){var t=prompt('Type the area/location:');if(t)s.areas.push(t.trim());}
+      else if(s.areas.indexOf(v)<0){s.areas.push(v);}
+      renderSup();scheduleSave();});
+    var del=el('button',{class:'btn danger sm'},['✕']);del.onclick=function(){supervision.splice(i,1);renderSup();scheduleSave();};
+    box.appendChild(el('div',{class:'suprow'},[sel,add,del]));
+    var chipWrap=el('div',{class:'chips',style:'margin:-2px 0 14px 2px;'});
+    if(!s.areas.length){chipWrap.appendChild(el('span',{class:'hint'},['no jobs assigned yet — use the dropdown ↑']));}
+    s.areas.forEach(function(a,ai){var c=el('span',{class:'chip on'},[a+"  ✕"]);
+      c.onclick=function(){s.areas.splice(ai,1);renderSup();scheduleSave();};chipWrap.appendChild(c);});
+    box.appendChild(chipWrap);
+  });
+}
+function addSupRow(){supervision.push({sup:lib.supervisors[0]||"",areas:[]});renderSup();scheduleSave();}
+
+/* ================= JOBS ================= */
+function addJob(){
+  jobs.push({id:++jobSeq,crew:[],location:"",equipment:"",job:"",ticket:"",type:"",sup:"",logBy:"",driver:"",arrival:"",second:null});
+  renderJobs();scheduleSave();
+}
+function makeChipRow(items,isSelected,onToggle){
+  var box=el('div',{class:'chips'});
+  items.forEach(function(it){var c=el('span',{class:'chip'+(isSelected(it)?' on':'')},[it]);
+    c.onclick=function(){onToggle(it,c);};box.appendChild(c);});
+  return box;
+}
+function makeInsertChips(items,target,prefix){
+  var box=el('div',{class:'chips'});
+  items.forEach(function(it){var c=el('span',{class:'chip ins'},[it]);
+    c.onclick=function(){var cur=target.value.trim();target.value=cur?(cur+(prefix||", ")+it):it;target.dispatchEvent(new Event('input'));};
+    box.appendChild(c);});
+  return box;
+}
+function renderJobs(){
+  var box=document.getElementById('jobList');box.innerHTML="";
+  if(!jobs.length){box.appendChild(el('div',{class:'hint'},['No jobs yet — press "+ Add Job" to start.']));}
+  jobs.forEach(function(j,idx){
+    var card=el('div',{class:'jobcard'});
+    var tools=el('div',{class:'jtools'});
+    var up=el('button',{class:'btn ghost sm'},['↑']);up.onclick=function(){if(idx>0){jobs.splice(idx-1,0,jobs.splice(idx,1)[0]);renderJobs();scheduleSave();}};
+    var dn=el('button',{class:'btn ghost sm'},['↓']);dn.onclick=function(){if(idx<jobs.length-1){jobs.splice(idx+1,0,jobs.splice(idx,1)[0]);renderJobs();scheduleSave();}};
+    var rm=el('button',{class:'btn danger sm'},['Remove']);rm.onclick=function(){jobs.splice(idx,1);renderJobs();scheduleSave();};
+    tools.appendChild(up);tools.appendChild(dn);tools.appendChild(rm);
+    card.appendChild(el('div',{class:'jhead'},[el('span',{class:'jnum'},['Job #'+(idx+3)+' on plan']),tools]));
+
+    card.appendChild(el('label',{},['Crew (tap to select)']));
+    card.appendChild(makeChipRow(lib.employees,function(n){return j.crew.indexOf(n)>=0;},function(n,c){
+      var p=j.crew.indexOf(n);if(p>=0){j.crew.splice(p,1);c.classList.remove('on');}else{j.crew.push(n);c.classList.add('on');}scheduleSave();
+    }));
+
+    card.appendChild(el('label',{},['Going to (pick a known job site to auto-fill)']));
+    var sitePick=el('select',{class:'site-pick'});
+    sitePick.appendChild(el('option',{value:''},['— choose a job site —']));
+    lib.sites.forEach(function(s,si){sitePick.appendChild(el('option',{value:String(si)},[s.loc+(s.job?"  (Job#-"+s.job+")":"")]));});
+    sitePick.onchange=function(){if(sitePick.value==="")return;var s=lib.sites[parseInt(sitePick.value,10)];
+      j.location=s.loc;j.job=s.job;j.ticket=s.ticket;j.type=s.type;j.sup=s.sup;j.logBy=s.sup;renderJobs();scheduleSave();};
+    card.appendChild(sitePick);
+
+    var loc=el('input',{type:'text',placeholder:'location',value:j.location});
+    loc.addEventListener('input',function(){j.location=loc.value;});
+    card.appendChild(loc);
+
+    card.appendChild(el('label',{},['With (trucks / equipment / details)']));
+    var eq=el('textarea',{placeholder:'e.g. vacuum truck #426, truck #242, harness and yo-yos'});eq.value=j.equipment;
+    eq.addEventListener('input',function(){j.equipment=eq.value;});
+    card.appendChild(eq);
+    card.appendChild(makeInsertChips(lib.equipment,eq,", "));
+
+    var r1=el('div',{class:'row'});
+    var jb=el('input',{type:'text',placeholder:'e.g. 10075',value:j.job});jb.addEventListener('input',function(){j.job=jb.value;});
+    var tk=el('input',{type:'text',placeholder:'e.g. DT075849',value:j.ticket});tk.addEventListener('input',function(){j.ticket=tk.value;});
+    var ty=el('select');['','Quoted','Distribution'].forEach(function(t){var o=el('option',{value:t},[t||'(no type)']);if(t===j.type)o.selected=true;ty.appendChild(o);});
+    ty.addEventListener('change',function(){j.type=ty.value;scheduleSave();});
+    r1.appendChild(el('div',{},[el('label',{},['Job #']),jb]));
+    r1.appendChild(el('div',{},[el('label',{},['Ticket #']),tk]));
+    r1.appendChild(el('div',{},[el('label',{},['Type']),ty]));
+    card.appendChild(r1);
+
+    var r2=el('div',{class:'row'});
+    var sp=el('select');var spOpts=[''].concat(lib.supervisors);if(j.sup&&spOpts.indexOf(j.sup)<0)spOpts.push(j.sup);
+    spOpts.forEach(function(n){var o=el('option',{value:n},[n||'(none)']);if(n===j.sup)o.selected=true;sp.appendChild(o);});
+    sp.addEventListener('change',function(){var linked=(j.logBy===j.sup||!j.logBy);j.sup=sp.value;if(linked){j.logBy=sp.value;lb.value=sp.value;}scheduleSave();});
+    var lb=el('input',{type:'text',placeholder:'photos & log by',value:j.logBy});lb.addEventListener('input',function(){j.logBy=lb.value;});
+    var dr=el('select');var drOpts=['(none)'].concat(j.crew.length?j.crew:lib.employees);
+    drOpts.forEach(function(n){var val=n==='(none)'?'':n;var o=el('option',{value:val},[n]);if(val===j.driver)o.selected=true;dr.appendChild(o);});
+    dr.addEventListener('change',function(){j.driver=dr.value;scheduleSave();});
+    r2.appendChild(el('div',{},[el('label',{},['Supervisor']),sp]));
+    r2.appendChild(el('div',{},[el('label',{},['Photos & Log by']),lb]));
+    r2.appendChild(el('div',{},[el('label',{},['Driver Log by']),dr]));
+    card.appendChild(r2);
+
+    card.appendChild(el('label',{},['Arrival / special note (optional)']));
+    var ar=el('input',{type:'text',placeholder:'e.g. (Arrival time to yard 5:30am, jobsite 6:30am)',value:j.arrival});
+    ar.addEventListener('input',function(){j.arrival=ar.value;});
+    card.appendChild(ar);
+
+    var sj=el('div',{class:'secondjob'});
+    if(j.second){
+      sj.appendChild(el('label',{},['SECOND JOB — going to']));
+      var s2loc=el('input',{type:'text',placeholder:'location',value:j.second.location});s2loc.addEventListener('input',function(){j.second.location=s2loc.value;});
+      sj.appendChild(s2loc);
+      sj.appendChild(el('label',{},['With (equipment/details)']));
+      var s2eq=el('textarea',{});s2eq.value=j.second.equipment;s2eq.addEventListener('input',function(){j.second.equipment=s2eq.value;});
+      sj.appendChild(s2eq);
+      var s2r=el('div',{class:'row'});
+      var s2jb=el('input',{type:'text',placeholder:'Job #',value:j.second.job});s2jb.addEventListener('input',function(){j.second.job=s2jb.value;});
+      var s2tk=el('input',{type:'text',placeholder:'Ticket #',value:j.second.ticket});s2tk.addEventListener('input',function(){j.second.ticket=s2tk.value;});
+      s2r.appendChild(el('div',{},[el('label',{},['Job #']),s2jb]));
+      s2r.appendChild(el('div',{},[el('label',{},['Ticket #']),s2tk]));
+      sj.appendChild(s2r);
+      var s2rm=el('button',{class:'btn danger sm'},['Remove second job']);s2rm.onclick=function(){j.second=null;renderJobs();scheduleSave();};
+      sj.appendChild(el('div',{style:'margin-top:8px'},[s2rm]));
+    }else{
+      var addSecond=el('button',{class:'btn ghost sm'},['+ Add second job (same crew/truck)']);
+      addSecond.onclick=function(){j.second={location:"",equipment:j.equipment,job:"",ticket:""};renderJobs();scheduleSave();};
+      sj.appendChild(addSecond);
+    }
+    card.appendChild(sj);
+    box.appendChild(card);
+  });
+}
+
+/* ================= GENERATE ================= */
+function jobBlock(j,num){
+  var lines=[];
+  var crew=joinNames(j.crew);
+  var head=num+".) "+(crew?crew:"(crew)");
+  if(j.location) head+=" going to "+j.location;
+  if(j.equipment) head+=" with "+j.equipment.trim().replace(/\s+/g," ");
+  head=head.replace(/[.\s]*$/,"")+".";
+  if(j.job) head+=" Job#-"+j.job+".";
+  if(j.ticket) head+=" "+j.ticket;
+  if(j.arrival) head+=" "+j.arrival;
+  lines.push(head);
+  if(j.second && (j.second.location||j.second.job)){
+    var s2="SECOND JOB going to "+(j.second.location||"")+(j.second.equipment?(" with "+j.second.equipment.trim()):"");
+    s2=s2.replace(/[.\s]*$/,"")+".";
+    if(j.second.job) s2+=" Job#-"+j.second.job+".";
+    if(j.second.ticket) s2+=" "+j.second.ticket;
+    lines.push("");lines.push(s2);
+  }
+  lines.push("");
+  if(j.type) lines.push("*"+j.type+"*");
+  if(j.sup){lines.push("");lines.push("*"+j.sup+" to supervise*");
+    lines.push("");lines.push("*"+j.sup+" to provide Whatsapp photos & Ledger/Daily Log*");}
+  else if(j.logBy){lines.push("");lines.push("*"+j.logBy+" to provide Whatsapp photos & Ledger/Daily Log*");}
+  if(j.driver){lines.push("");lines.push("*"+j.driver+" do Driver Log*");}
+  lines.push("");lines.push(DEFAULTS.footer);
+  return lines.join("\n");
+}
+function buildPlan(){
+  var out=[];
+  out.push("Plan-"+fmtDate(document.getElementById('planDate').value));out.push("");
+  var note=document.getElementById('attentionNote').value.trim();
+  if(note){out.push(note);out.push("");}
+  out.push("1.) "+document.getElementById('repairsCrew').value.trim());out.push("");
+  document.getElementById('repairsExtra').value.split("\n").map(function(s){return s.trim();}).filter(Boolean)
+    .forEach(function(l){out.push("***"+l.replace(/^\*+/,'').trim());out.push("");});
+  out.push("~REPAIRS LIST~");out.push("");
+  document.getElementById('repairsList').value.split("\n").map(function(s){return s.trim();}).filter(Boolean)
+    .forEach(function(b){out.push("• "+b);out.push("");});
+  out.push("2.) Yvette and Julio to supervise:");out.push("");
+  supervision.forEach(function(s){if(!s.sup)return;out.push("•"+s.sup+" to supervise:");
+    var areas=(s.areas||[]).filter(Boolean);if(!areas.length)areas=[""];
+    areas.forEach(function(a){out.push("-"+(a||""));});out.push("");});
+  jobs.forEach(function(j,i){out.push(jobBlock(j,i+3));out.push("");});
+  return out.join("\n").replace(/\n{3,}/g,"\n\n").trim()+"\n";
+}
+function generate(){var txt=buildPlan();document.getElementById('outText').textContent=txt;window._planText=txt;document.getElementById('outDlg').showModal();}
+
+/* ================= COPY / MAIL ================= */
+function doCopy(){var txt=buildPlan();window._planText=txt;
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast("Plan copied ✓");},function(){fallbackCopy(txt);});}
+  else{fallbackCopy(txt);}}
+function fallbackCopy(txt){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');toast("Plan copied ✓");}catch(e){toast("Select the text and copy manually");}
+  document.body.removeChild(ta);}
+function extractEmails(str){var m=str.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);return m?m.filter(function(e,i){return m.indexOf(e)===i;}):[];}
+function doMail(){var txt=buildPlan();var subject="Plan-"+fmtDate(document.getElementById('planDate').value);
+  var to=extractEmails(document.getElementById('recipients').value).join(",");
+  var link="mailto:"+encodeURIComponent(to).replace(/%2C/g,",")+"?subject="+encodeURIComponent(subject)+"&body="+encodeURIComponent(txt);
+  window.location.href=link;toast("Opening your email with everyone in the To line…");}
+
+/* ================= MANAGER ================= */
+function mgrColumn(title,arr,onAdd){
+  var wrap=el('div');wrap.appendChild(el('label',{},[title]));
+  var list=el('div',{class:'mgr-list'});
+  arr.forEach(function(item,i){var label=typeof item==='object'?item.loc:item;var it=el('span',{class:'mgr-item'},[label]);
+    var x=el('button',{},['✕']);x.onclick=function(){arr.splice(i,1);openManager();renderJobs();renderSup();scheduleSave();};it.appendChild(x);list.appendChild(it);});
+  wrap.appendChild(list);
+  var inp=el('input',{type:'text',placeholder:'add new…'});
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter'&&inp.value.trim()){onAdd(inp.value.trim());inp.value="";openManager();renderJobs();renderSup();scheduleSave();}});
+  wrap.appendChild(inp);return wrap;
+}
+function openManager(){var g=document.getElementById('mgrGrid');g.innerHTML="";
+  g.appendChild(mgrColumn("Employees / Crew",lib.employees,function(v){lib.employees.push(v);}));
+  g.appendChild(mgrColumn("Supervisors",lib.supervisors,function(v){lib.supervisors.push(v);}));
+  g.appendChild(mgrColumn("Trucks & Equipment",lib.equipment,function(v){lib.equipment.push(v);}));
+  g.appendChild(mgrColumn("Job Sites",lib.sites,function(v){lib.sites.push({loc:v,job:"",ticket:"",type:"",sup:""});}));
+  if(!document.getElementById('mgrDlg').open)document.getElementById('mgrDlg').showModal();}
+
+/* ================= SHARED SYNC ================= */
+var ME = localStorage.getItem('lb_user') || "";
+var KEY = localStorage.getItem('lb_key') || "";
+var lastServerAt = 0;
+var saveTimer = null;
+var ONLINE = true;
+function api(method, body){
+  var opts={method:method||'GET',headers:{}};
+  if(KEY)opts.headers['x-plan-key']=KEY;
+  if(body){opts.headers['content-type']='application/json';opts.body=body;}
+  return fetch("/api/plan",opts);
+}
+function showGate(){document.getElementById('gate').classList.remove('hide');
+  setTimeout(function(){var e=document.getElementById('gatePw');if(e)e.focus();},50);}
+function hideGate(){document.getElementById('gate').classList.add('hide');}
+function tryUnlock(){
+  var v=document.getElementById('gatePw').value;
+  document.getElementById('gateErr').textContent="Checking…";
+  var h={};if(v)h['x-plan-key']=v;
+  fetch("/api/plan",{headers:h}).then(function(r){
+    if(r.status===401){document.getElementById('gateErr').textContent="Wrong password — try again.";return;}
+    KEY=v;localStorage.setItem('lb_key',v);document.getElementById('gateErr').textContent="";hideGate();bootPlan();
+  }).catch(function(){document.getElementById('gateErr').textContent="Could not reach the app.";});
+}
+function setUser(u){
+  if(u==="Other"){var n=prompt("Type your name:");if(!n)return;u=n;}
+  ME=u;localStorage.setItem('lb_user',u);paintWho();scheduleSave();
+}
+function paintWho(){
+  document.querySelectorAll('.whochip').forEach(function(c){c.classList.toggle('on',c.getAttribute('data-user')===ME);});
+}
+function setStatus(txt,cls){document.getElementById('syncStatus').textContent=txt;
+  var d=document.getElementById('syncDot');d.className="dot"+(cls?(" "+cls):"");}
+function collectState(){
+  return {
+    v:1, dateKey:document.getElementById('planDate').value, updatedBy:ME||"someone",
+    date:document.getElementById('planDate').value,
+    lib:lib, supervision:supervision, jobs:jobs,
+    attentionNote:document.getElementById('attentionNote').value,
+    repairsCrew:document.getElementById('repairsCrew').value,
+    repairsExtra:document.getElementById('repairsExtra').value,
+    repairsList:document.getElementById('repairsList').value,
+    recipients:document.getElementById('recipients').value
+  };
+}
+function applyState(s){
+  if(!s)return;
+  if(s.lib){lib.employees=s.lib.employees||lib.employees;lib.supervisors=s.lib.supervisors||lib.supervisors;
+    lib.equipment=s.lib.equipment||lib.equipment;lib.sites=s.lib.sites||lib.sites;}
+  if(s.supervision){supervision=s.supervision;supervision.forEach(function(x){if(!x.areas)x.areas=x.area?[x.area]:[];});}
+  if(s.jobs){jobs=s.jobs;jobSeq=jobs.reduce(function(m,j){return Math.max(m,j.id||0);},0);}
+  if(s.date){document.getElementById('planDate').value=s.date;document.getElementById('dateDisplay').value="Plan-"+fmtDate(s.date);}
+  if(s.attentionNote!=null)document.getElementById('attentionNote').value=s.attentionNote;
+  if(s.repairsCrew!=null)document.getElementById('repairsCrew').value=s.repairsCrew;
+  if(s.repairsExtra!=null)document.getElementById('repairsExtra').value=s.repairsExtra;
+  if(s.repairsList!=null)document.getElementById('repairsList').value=s.repairsList;
+  if(s.recipients!=null)document.getElementById('recipients').value=s.recipients;
+  renderSup();renderJobs();
+}
+function scheduleSave(){
+  if(saveTimer)clearTimeout(saveTimer);
+  setStatus("Saving…","off");
+  saveTimer=setTimeout(saveNow,1200);
+}
+function saveNow(){
+  if(saveTimer){clearTimeout(saveTimer);saveTimer=null;}
+  var payload=collectState();
+  api("POST",JSON.stringify(payload))
+    .then(function(r){if(r.status===401){showGate();return null;}return r.json();})
+    .then(function(res){if(!res)return;if(res.ok){lastServerAt=res.updatedAt||Date.now();ONLINE=true;
+      setStatus("Shared ✓ saved "+nowTime()+(ME?(" by "+ME):""),"ok");}
+      else{setStatus("Saved on this device only","off");}})
+    .catch(function(){ONLINE=false;setStatus("Working offline (not deployed yet) — changes stay on this device","off");});
+}
+function loadLatest(){
+  api("GET").then(function(r){if(r.status===401){showGate();return null;}return r.json();}).then(function(d){
+    if(!d)return;
+    if(d.state){applyState(d.state);lastServerAt=d.updatedAt||d.state.updatedAt||0;}
+    hideBanner();setStatus("Loaded latest ✓ "+nowTime(),"ok");
+  }).catch(function(){toast("Could not reach the shared plan");});
+}
+function showBanner(by){var b=document.getElementById('loadBanner');
+  document.getElementById('loadBannerText').textContent=(by||"Someone")+" updated the plan.";b.classList.add('show');}
+function hideBanner(){document.getElementById('loadBanner').classList.remove('show');}
+function poll(){
+  api("GET").then(function(r){if(r.status===401){showGate();return null;}return r.json();}).then(function(d){
+    if(!d)return;
+    ONLINE=true;
+    if(d&&d.updatedAt&&d.updatedAt>lastServerAt){
+      var by=(d.state&&d.state.updatedBy)||"Someone";
+      if(by!==ME){showBanner(by);}
+      lastServerAt=d.updatedAt; // note we've seen it; user chooses to load
+    }
+    if(document.getElementById('syncStatus').textContent==="Starting…")setStatus("Shared ✓ ready","ok");
+  }).catch(function(){ONLINE=false;
+    if(document.getElementById('syncStatus').textContent==="Starting…")
+      setStatus("Working offline (not deployed yet) — deploy to Cloudflare to share","off");});
+}
+
+/* ================= INIT ================= */
+function loadDefaults(){
+  document.getElementById('attentionNote').value=DEFAULTS.attentionNote;
+  document.getElementById('repairsCrew').value=DEFAULTS.repairsCrew;
+  document.getElementById('repairsList').value=DEFAULTS.repairsList.join("\n");
+  document.getElementById('recipients').value=DEFAULTS.recipients;
+}
+function bootPlan(){
+  // Load the shared plan. 401 -> show password gate. None/offline -> start fresh.
+  api("GET").then(function(r){
+    if(r.status===401){showGate();return null;}
+    return r.json();
+  }).then(function(d){
+    if(d===null)return; // gated
+    ONLINE=true;
+    if(d&&d.state){applyState(d.state);lastServerAt=d.updatedAt||d.state.updatedAt||0;setStatus("Shared ✓ loaded "+nowTime(),"ok");}
+    else{if(!jobs.length){addJob();addJob();}setStatus("Shared ✓ ready — first plan","ok");saveNow();}
+  }).catch(function(){ONLINE=false;if(!jobs.length){addJob();addJob();}
+    setStatus("Working offline (not deployed yet) — changes stay on this device","off");});
+}
+function init(){
+  initDate();loadDefaults();renderSup();paintWho();
+  document.querySelector('.wrap').addEventListener('input',scheduleSave,true);
+  document.querySelector('.wrap').addEventListener('change',scheduleSave,true);
+  var gp=document.getElementById('gatePw');if(gp)gp.addEventListener('keydown',function(e){if(e.key==='Enter')tryUnlock();});
+  setInterval(poll,5000);
+  bootPlan();
+}
+init();
+</script>
+</body>
+</html>
